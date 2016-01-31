@@ -5,12 +5,20 @@ date: "January 30, 2016"
 output: ioslides_presentation
 ---
 
+## Understanding Financial Networks Informs Trading
+
+Financial networks is a map of which bank has lent money to some other bank. Analyzing the network can help identify banks that pose inherent risks to the system.
+
+> - Guide overall portfolio strategy
+> - Inform clients of potential pitfalls
+> - Identify specific bank stocks to short
+
 ## Properties of Financial Networks (igraph package)
 
-- Density 
-- Clustering (transitivity)
-- Path length 
-- Degree 
+> - Density 
+> - Clustering (transitivity)
+> - Path length 
+> - Degree 
 ```{r echo=F, messages = F, include=F, cache=F, results = 'asis'}
 library(igraph)
 ```
