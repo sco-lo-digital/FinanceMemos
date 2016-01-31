@@ -1,0 +1,33 @@
+---
+title: "Financial Networks"
+author: "Scott Jacobs, Andrea Bernard, Justin Salvador, Haixia Zhang"
+date: "January 30, 2016"
+output: ioslides_presentation
+---
+
+## Properties of Financial Networks (igraph package)
+
+- Density 
+- Clustering (transitivity)
+- Path length 
+- Degree 
+```{r echo=F, messages = F, include=F, cache=F, results = 'asis'}
+library(igraph)
+```
+
+## *Non-Random* **Regular** Network
+
+
+```{r}
+set.seed(7) 
+e <- erdos.renyi.game(100, 0.1) #100 Nodes, Prob edge btwen two vertices = .10
+plot(e)
+```
+
+## Properties of this Regular Non-Random Network
+
+```{r}
+graph.density(e) # Ratio of no. of edges vs no. possible edges
+transitivity(e) # Prob that adjacent vertices are connected
+average.path.length(e) # Average dist between vertices
+```
