@@ -1,29 +1,44 @@
 ---
-title: "Financial Networks"
-author: "Scott Jacobs, Andrea Bernard, Justin Salvador, Haixia Zhang"
-date: "January 30, 2016"
+title: "Introduction to Quantitative Finance for R: Financial Networks"
+author: "Andrea Bernard, Scott Jacobs, Justin Salvador, Haixia Zhang"
+date: Feb 6, 2016
 output: ioslides_presentation
 ---
 
-## Understanding Financial Networks Informs Trading
+##Presentation Objectives
 
-Financial networks is a map of which bank has lent money to some other bank. Analyzing the network can help identify banks that pose inherent risks to the system.
+We are presenting this information to you so that you may
+
+> - Have a fundamental understanding of Financial Networks and their properties.
+
+> - Identify Systemically Important Financial Institutions.
+
+> - Add Financial Network Analysis to your investment analysis framework.
+
+## Obj 1: Understanding Financial Networks Informs Trading
+
+Financial networks are a map of which bank has lent money to some other bank. Analyzing the network can help identify banks that pose inherent risks to the system.
 
 > - Guide overall portfolio strategy
 > - Inform clients of potential pitfalls
 > - Identify specific bank stocks to short
 
-## Properties of Financial Networks (igraph package)
+## Properties of Financial Networks 
 
-> - Density 
-> - Clustering (transitivity)
-> - Path length 
+> - Density - ie how densely connected are the banks? Pre-Lehman = very dense
+> - Clustering (transitivity) - how interwoven groups in the network are
+> - Path length - linkedin reference
 > - Degree 
+
 ```{r echo=F, messages = F, include=F, cache=F, results = 'asis'}
 library(igraph)
+library(quantmod)
+library(igraph)
+library(stockchartR)
+library(networkD3)
 ```
 
-## *Non-Random* **Regular** Network
+## *Non-Random* **Regular** Network 
 
 
 ```{r}
@@ -32,10 +47,75 @@ e <- erdos.renyi.game(100, 0.1) #100 Nodes, Prob edge btwen two vertices = .10
 plot(e)
 ```
 
+##Using R to interact with visualizations to understand the SIFI
+```{r echo=F}
+
+# Load data
+data(MisLinks)
+data(MisNodes)
+
+# Plot
+forceNetwork(Links = MisLinks, Nodes = MisNodes,
+            Source = "source", Target = "target",
+            Value = "value", NodeID = "name",
+            Group = "group", opacity = 0.8)
+```
+
 ## Properties of this Regular Non-Random Network
+
+Easy to calculate these in R;
 
 ```{r}
 graph.density(e) # Ratio of no. of edges vs no. possible edges
 transitivity(e) # Prob that adjacent vertices are connected
 average.path.length(e) # Average dist between vertices
+```
+
+## Obj 2: Identifying Systematically Important Financial Institutions (SIFIs)
+
+> 1 There are some banks that are so important, that if they were to disappear the market itself would suffer greatly.
+
+> 2 We can quantify that risk by defining some measure of "centrality"
+    - Degree
+    - Betweeness
+    - Closeness
+    - Eigenvector
+    
+##Obj 3: Let's create an Index value, SIFI = Index > 2.5
+
+```{r IndexValue, echo=F}
+
+data <- read.csv2("~/Data_Science/FinanceMemos/networktable.csv", stringsAsFactors=FALSE)
+g <- graph.data.frame(data)
+degree <- degree(g, normalized = T)
+between <- betweenness(g, normalized = T)
+closeness <- closeness(g, normalized = T)
+eigenv <- evcent(g, directed = T)$vector
+
+normalizedata <- function(x) x / mean(x)
+index <- (normalizedata(degree) + normalizedata(between) + normalizedata(closeness) + normalizedata(eigenv) )/ 4
+summary(index)
+```
+```{r echo=F, fig.width=5, fig.height=4.5}
+hist(index)
+```
+
+
+##Which banks do we watch? Set cutoff to 3.5
+
+These are the banks (by number) that we will watch for downgrades by a debt rating agency due to rising leverage ratios. 
+
+```{r}
+names(which(index>3.5))
+```
+
+##What instrument do we use to go short?
+
+When these banks reach the critical threshold in our model, we short the financials sector using **XLF**. library(c("stockchartR", "quantmod")
+```{r chart, echo=F, warning=F, message = F, }
+xlf <- getSymbols("xlf", auto.assign=FALSE, from="2013-01-01")
+
+XLFchart <- stockchartR::stockchart(adjustOHLC(xlf))
+XLFchart
+
 ```
