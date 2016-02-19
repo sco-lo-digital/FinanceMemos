@@ -1,0 +1,49 @@
+---
+title: "Ch13_SystemicRisk"
+author: "Scott Jacobs, Andrea Bernard, Justin Salvador, Haixia Zhang"
+date: "February 18, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(dplyr)
+library(igraph)
+mtx <- read.csv("~/Data_Science/FinanceMemos/mtx.csv", sep=";", stringsAsFactors=FALSE)%>% as.matrix()
+adj_mtx <- mtx
+#If there is a N/A, put a 0 to indicate no lending
+adj_mtx[is.na(adj_mtx)] <- 0
+#If there is a number (amt lent) put a 1 to indicate lending
+adj_mtx[adj_mtx != 0] <- 1
+
+#Create graph object
+G <- graph.adjacency(adj_mtx, mode = "undirected")
+#Identify the largest cliques (there are 7)
+CORE <- largest.cliques(G)
+
+#loop through and create network diagrams for the 7 largest cliques
+for ( i in 1:length(CORE)){
+    core <- CORE[[i]]
+    periphery <- setdiff(1:33, core)
+    V(G)$color[periphery] <- rgb(0,1,0)
+    V(G)$color[core] <- rgb(1,0,0)
+    print(i)
+    print(core)
+    print(periphery)
+    H <- induced_subgraph(G, periphery)
+    d <- mean(degree(H))
+    #core nodes are red periphery are green
+    plot(G, 
+         layout = layout.fruchterman.reingold,
+         vertex.color = V(G)$color, 
+         vertex.size = 25, 
+         vertex.label.color = "white",
+         vertex.label.family = "sans",
+         edge.width = 2,
+         main = paste("Avg periphery degree:", round(d, 2)))
+}
+```
+
